@@ -23,6 +23,10 @@ float end = 18;                                 //
 int hour, min;                                  //
 float sec;                                      //
 float speed;                                    //
+float fspeed;                                   //
+float pSec;
+int pMin;
+int pHour;
 
 color sColor1 = #003882;                        //node coloring (IP1)
 color sColor2 = #5100FF;                        //(IP2)
@@ -243,6 +247,8 @@ float fr(float z){
 
 void draw() {
   background(180);
+  speedAdjust.setValueLabel(fspeed + "x");
+  timeline.setValueLabel(nf(pHour, 2) + ":" + nf(pMin, 2) + ":" + nf(pSec, 2, 2));
   
   //updates current nodes
   for(Iterator it = nodes.iterator(); it.hasNext();){
@@ -542,19 +548,17 @@ void play() {
 //timeline control
 void timeline(float t) {
   time = t;
-  float pSec = (time-initTime) % 60;
-  int pMin = floor((time-initTime)/60) % 60;
-  int pHour = floor((time-initTime)/3600);
-  timeline.setValueLabel(nf(pHour, 2) + ":" + nf(pMin, 2) + ":" + nf(pSec, 2, 2));
+  pSec = (time-initTime) % 60;
+  pMin = floor((time-initTime)/60) % 60;
+  pHour = floor((time-initTime)/3600);
 }
 
 //playback speed control
 void speedAdjust(float s) {
   speed = pow(10,s);
-  float fspeed = speed * 10;
+  fspeed = speed * 10;
   int rspeed = (int) fspeed;
   fspeed = (float) rspeed / 10;
-  speedAdjust.setValueLabel(fspeed + "x");
 }
 
 //layout controls
