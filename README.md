@@ -9,6 +9,7 @@ More information found in full report in /doc directory.
 ## Installation
 
 Download source folder and [Processing IDE](https://processing.org/download) to run application.
+ControlP5 library is required for running this tool.
 
 ## Usage
 
