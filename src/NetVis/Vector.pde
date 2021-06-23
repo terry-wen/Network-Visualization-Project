@@ -5,8 +5,8 @@ Basic 2D Vector class for easy position manipulation of nodes.
 */
 
 class Vector {
-  float x;
-  float y;
+  private float x;
+  private float y;
   
   public Vector() {
     this(0,0);
@@ -16,6 +16,14 @@ class Vector {
     this.x = _x;
     this.y = _y;
   }
+  
+  public float getX() {
+    return this.x;
+  }
+  
+  public float getY() {
+    return this.y;
+  }
 
   void clear() {
     this.x = 0;
@@ -23,11 +31,11 @@ class Vector {
   }
   
   Vector add(Vector v) {
-    return new Vector(this.x + v.x, this.y + v.y);
+    return new Vector(this.x + v.getX(), this.y + v.getY());
   }
   
   Vector sub(Vector v) {
-    return new Vector(this.x - v.x, this.y - v.y);
+    return new Vector(this.x - v.getX(), this.y - v.getY());
   }
   
   Vector mult(float alpha) {

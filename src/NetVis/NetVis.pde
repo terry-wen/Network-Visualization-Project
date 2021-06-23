@@ -163,8 +163,7 @@ void draw() {
   background(180);
   speedAdjust.setValueLabel(fspeed + "x");
   timeline.setValueLabel(Utils.timeFloatToString(currentTime));
-  
-  dnodes = new ArrayList();
+
   //updates current nodes
   for(Iterator it = nodes.values().iterator(); it.hasNext();){
     Node n = (Node) it.next();
