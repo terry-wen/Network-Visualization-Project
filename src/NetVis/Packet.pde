@@ -6,67 +6,39 @@ Exist in arrays on specific flows, portrayed on link animation and flow timeline
 */
 
 class Packet {
-  Node src, dst;
-  float tstamp, size, pos, len;
-  color proto = 0;
-  color TCP = #8000FF;
-  color UDP = #00C9CC;
-  Flow parent;
+  boolean atob;
+  float timeStamp, size, pos, len;
+  Link link;
   boolean selected = false;
-  String sp, dp, protoText;
+  String srcPort, destPort, protocol;
   
-  Packet() {
-    parent = new Flow(new Node(), new Node());
-    parent.parent = new Link(new Node(), new Node());
-  }
-  
-  Packet(Node _src, Node _dst, String _sp, String _dp, float _tstamp, float _size, String _proto) {
-    src = _src;
-    dst = _dst;
-    tstamp = _tstamp;
+  Packet(Link link, boolean _atob, String _srcPort, String _destPort, float _timeStamp, float _size, String _protocol) {
+    atob = _atob;
+    timeStamp = _timeStamp;
     size = _size;
-    sp = _sp;
-    dp = _dp;
-    protoText = _proto;
-    if(_proto.equals("TCP"))
-      proto = TCP;
-    else if (_proto.equals("UDP"))
-      proto = UDP;
+    srcPort = _srcPort;
+    destPort = _destPort;
+    protocol = _protocol;
+    pos = max(225, (min(width - 225, 225 + (((timeStamp - link.startTime)/(link.endTime - link.startTime))*(width-450)))));
+    len = (atob ? 1 : -1) * min(35, log(size)*5);
   }
   
   //for timeline
   void draw() {
     strokeWeight(1);
-    if(selected)
-      stroke(#00FF00);
-    else {
-      if(src == parent.a)
-        stroke(parent.a.myColor);
-      else
-        stroke(parent.b.myColor);
-    }
-    pos = max(225, (min(width - 225, 225 + (((tstamp - parent.parent.startTime)/(parent.parent.endTime - parent.parent.startTime))*(width-450)))));
-    len = min(35, log(size)*5);
-    if(src == parent.b)
-      line(pos, 35 - len, pos, 35);
-    else
-      line(pos, 35, pos, 35 + len);
+    stroke(selected ? #00FF00 : #17386E);
+    line(pos, 35 + len, pos, 35);
   }
   
   //for selection
   boolean select(int mx, int my) {
     boolean x = ((mx >= pos - 1) && (mx <= pos + 1));
     boolean y;
-    if(src == parent.b)
-      y = (my <= 35) && (my >= 35 - len);
-    else 
+    if(atob)
       y = (my >= 35) && (my <= 35 + len);
-    if (x && y) {
-      selected = true;
-      return true;
-    } else {
-      selected = false;
-      return false;
-    }
+    else 
+      y = (my <= 35) && (my >= 35 - len);
+    selected = x && y;
+    return selected;
   }
 }

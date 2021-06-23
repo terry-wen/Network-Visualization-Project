@@ -5,27 +5,40 @@ Contains flow and is manipulated by node positions.
 @author: terrywen
 */
 
-class Link{
+class Link {
   float offset = 0;
   Node a, b;
   color proto = 0;
   float x1, y1, x2, y2, dashCount, lineAngle; //animation vars
   boolean drawn = false;
-  boolean selected = false;
+  boolean flowDrawn = false;
   float alpha = 0;                            //opacity
   float startTime, endTime;
-  Flow flow;
+  ArrayList packets;
+  boolean sending = false;
+  float weight = 0;
   
   Link(Node _a, Node _b) {
     a = _a;
     b = _b;
     startTime = 99999;
     endTime = 0;
-    flow = new Flow(a, b);
-    flow.parent = this;
+    packets = new ArrayList();
   }
   
-  void draw(float time) {
+  void addPacket(Packet p) {
+    packets.add(p);
+    p.link = this;
+  }
+  
+  void setTimes(float time) {
+    startTime = min(startTime, time - .25);
+    endTime = max(endTime, time + .25);
+    a.setTimes(time);
+    b.setTimes(time);
+  }
+  
+  void draw(float time, boolean selected) {
     strokeWeight(1);
     if(btwnTime(time)) {
       //appear animation
@@ -56,7 +69,7 @@ class Link{
       line(a.pos.x, a.pos.y, b.pos.x, b.pos.y);
     }
     
-    flow.draw(time);
+    drawFlow(time);
     
     if(!drawn) {
       selected = false;
@@ -69,12 +82,45 @@ class Link{
     }
   }
   
+  void drawFlow(float time) {
+    sending = false;
+    weight = 0;
+    stroke(proto);
+    strokeWeight(0);
+    //highlight if active
+    for(Iterator it = packets.iterator(); it.hasNext();) {
+      Packet p = (Packet) it.next();
+      if(time >= p.timeStamp - .1 && time <= p.timeStamp + .1)
+        sending = true;
+    }
+    if(sending) {
+      //appear animation
+      if(!flowDrawn){
+        weight++;
+        strokeWeight(weight);
+        //stroke(proto, weight*(255/4));
+        if(weight >= 2)
+          drawn = true;
+      }
+      else
+        strokeWeight(2);
+    }
+    else {
+      //disappear animation
+      if(flowDrawn) {
+        weight--;
+        strokeWeight(weight);
+        //stroke(proto, weight*(255/4));
+        if(weight <= 0)
+          drawn = false;
+      }
+    }
+    line(a.pos.x, a.pos.y, b.pos.x, b.pos.y);
+  }
+  
   //checks for display
   boolean btwnTime(float time) {
-    if(time >= startTime && time <= endTime)
-      return true;
-    else
-      return false;
+    return time >= startTime && time <= endTime;
   }
   
   //connection animation
@@ -106,11 +152,7 @@ class Link{
   
   //checks for existence
   boolean check(Node node1, Node node2) {
-    if((node1 == a && node2 == b) || (node2 == a && node1 == b)) {
-      return true;
-    } else {
-      return false;
-    }
+    return (node1 == a && node2 == b) || (node2 == a && node1 == b);
   }
   
   //link selection
@@ -122,11 +164,36 @@ class Link{
     float slopea = (a.pos.y - my)/(a.pos.x - mx);
     float slopeb = (b.pos.y - my)/(b.pos.x - mx);
     boolean online = ((slopeb <= slope + u) && (slopeb >= slope - u)) || ((slopea <= slope + u) && (slopea >= slope - u));
-    if (btx && (online || (bty && ((a.pos.x - b.pos.x) <= 25)))) {
-      return true;
-    } else {
-      selected = false;
-      return false;
+    return btx && (online || (bty && ((a.pos.x - b.pos.x) <= 25)));
+  }
+
+  //upper timeline
+  void drawTimeline(float time) {
+    //draw packets
+    for(Iterator it = packets.iterator(); it.hasNext();) {
+      Packet p = (Packet) it.next();
+      p.draw();
     }
+    stroke(0);
+    fill(0);
+    strokeWeight(2);
+    line(220, 35, width-220, 35);
+    //labels
+    textSize(9);
+    text("To", 220, 10);
+    text("To", 220, 65);
+    fill(a.myColor);
+    text(a.ip, 235, 10);
+    fill(b.myColor);
+    text(b.ip, 235, 65);
+    fill(0);
+    //timestamps
+    text(Utils.timeFloatToString(startTime), 220, 45);
+    text(Utils.timeFloatToString(endTime), width-273, 45);
+    textSize(12);
+    strokeWeight(1);
+    stroke(#FF0000);
+    float pos = max(225, (min(width - 225, 225 + (((time - startTime)/(endTime - startTime))*(width-450)))));
+    line(pos, 0, pos, 70);
   }
 }

@@ -8,7 +8,6 @@ class Node {
   Vector pos, disp;
   boolean drawn = false;
   boolean dragging = false;
-  boolean selected = false;
   boolean anchored = false;
   boolean locked = false;
   float startTime, endTime;
@@ -16,7 +15,7 @@ class Node {
   float cd = 0;
   color myColor = #3683FF;
   float offsetX, offsetY;
-  String ip, port;
+  String ip;
   
   Node() {
     pos = new Vector(random(width/2-width/8,width/2+width/8),random(height/2-height/8,height/2+height/8));
@@ -25,24 +24,17 @@ class Node {
     endTime = 0;
   }
   
-  Node(float _start, float _end) {
-    this();
-    startTime = _start;
-    endTime = _end;
-  }
-  
   //updates position on movement
   void update(){
-    pos.addSelf(disp);
+    pos = pos.add(disp);
     disp.clear();
   } 
  
-  void draw(float time) {
+  void draw(float time, boolean selected) {
     if(anchored){
       stroke(0);
       strokeWeight(2);
-    }
-    else
+    } else
       noStroke();
     fill(myColor);
     if(btwnTime(time) || locked) {
@@ -55,8 +47,7 @@ class Node {
         ellipse(pos.x, pos.y, cd*4, cd*4);
         if(cd >= d)
           drawn = true;
-      }
-      else {
+      } else {
         if (dragging)
           fill(#2865C7);
         else if (selected)
@@ -68,8 +59,7 @@ class Node {
           fill(0);
           text("L", pos.x-3, pos.y+4);
       }
-    }
-    else {
+    } else {
       //disappear animation
       if(drawn) {
         cd--;
@@ -78,34 +68,22 @@ class Node {
           drawn = false;
       }
     }
-    if(!drawn)
-      selected = false;
   }
   
   //for dragging
   boolean clicked(int mx, int my) {
-    float dist = sqrt((pos.x-mx)*(pos.x-mx) + (pos.y-my)*(pos.y-my));
-    if (dist <= 10) {
+    if (select(mx, my)) {
       dragging = true;
-      //anchored = true;
       offsetX = pos.x-mx;
       offsetY = pos.y-my;
       return true;
-    } 
-    else
-      return false;
+    }
+    return false;
   }
   
   //for selection
   boolean select(int mx, int my) {
-    float dist = sqrt((pos.x-mx)*(pos.x-mx) + (pos.y-my)*(pos.y-my));
-    if (dist <= d/2) {
-      selected = true;
-      return true;
-    } else {
-      selected = false;
-      return false;
-    }
+    return sqrt((pos.x-mx)*(pos.x-mx) + (pos.y-my)*(pos.y-my)) <= d/2;
   }
   
   void stopDragging() {
@@ -117,24 +95,17 @@ class Node {
       pos.x = mx + offsetX;
       pos.y = my + offsetY;
     }
-    if(pos.x < 90 + d/2) {
-      pos.x = 90 + d/2;
-    } else if(pos.x > width-d/2-90) {
-      pos.x = width-d/2-90;
-    }
-    if(pos.y < 100 + d/2) {
-      pos.y = 100 + d/2;
-    } else if(pos.y > (height-100)-d/2) {
-      pos.y = (height-100)-d/2;
-    }
+    constrain(90, width-90, 100, height-100);
   }
   
   //checks for display  
   boolean btwnTime(float time) {
-    if(time >= startTime && time <= endTime)
-      return true;
-    else
-      return false;
+    return time >= startTime && time <= endTime;
+  }
+  
+  void setTimes(float time) {
+    startTime = min(startTime, time - .25);
+    endTime = max(endTime, time + .25);
   }
   
   //limits bounds on mvt
@@ -144,6 +115,6 @@ class Node {
   }
   
   String toString() {
-    return ip + ":" + port;
+    return ip;
   }
 }
